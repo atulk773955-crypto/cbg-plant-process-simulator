@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CBG Plant Process Control Room</title>
+<meta name="description" content="Farm and kitchen waste to compressed biogas: every process step with equipment views and a profit and loss simulator.">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#16302f;--mut:#51666a;--line:#c9d6d8;--paper:#eef4f3;--moss:#3f7d4a;--cu:#c0703a;--amb:#d99a1e;--bad:#b83a32;--blue:#2f6f9f}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.55 Barlow,system-ui,sans-serif;color:var(--ink);background:var(--paper)}
+h1,h2,h3{font-family:'Barlow Condensed',Impact,sans-serif;line-height:1.05;margin:0;letter-spacing:.2px}
+.hero{position:relative;height:min(78vh,520px);min-height:400px;overflow:hidden}
+.hero svg.scene{position:absolute;inset:0;width:100%;height:100%}
+.hero .t{position:relative;padding:44px max(20px,5vw);max-width:620px}
+.hero h1{font-size:clamp(40px,7vw,76px)}
+.hero p{font-size:18px;max-width:46ch;margin:14px 0 20px}
+.btn{display:inline-block;background:var(--ink);color:#fff;padding:11px 20px;border-radius:6px;text-decoration:none;font-weight:600}
+section{padding:48px max(20px,5vw)}
+h2{font-size:clamp(30px,4vw,44px);margin-bottom:6px}
+.sub{color:var(--mut);max-width:62ch;margin:0 0 22px}
+.steps{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 12px}
+.step{flex:0 0 auto;border:1px solid var(--line);background:#fff;padding:9px 14px;border-radius:6px;cursor:pointer;font:600 15px Barlow,sans-serif;color:var(--ink)}
+.step[aria-selected=true]{background:var(--ink);color:#fff;border-color:var(--ink)}
+:focus-visible{outline:3px solid var(--amb);outline-offset:2px}
+.detail{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:28px;align-items:start}
+.view{border-radius:10px;overflow:hidden;border:1px solid var(--line);background:#fff}
+.view svg{display:block;width:100%;height:auto}
+.detail h3{font-size:32px;margin-bottom:8px}
+.kv{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.kv span{background:#fff;border:1px solid var(--line);border-radius:6px;padding:4px 10px;font-size:14px}
+.kv b{color:var(--moss)}
+.detail ul{padding-left:20px;margin:8px 0}
+.detail li{margin:6px 0}
+.sim{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:28px;align-items:start}
+fieldset{border:1px solid var(--line);border-radius:10px;background:#fff;margin:0 0 16px;padding:12px 16px 6px}
+legend{font:700 20px 'Barlow Condensed',sans-serif;padding:0 6px}
+.c{display:grid;grid-template-columns:minmax(120px,1fr) 1.4fr 78px;gap:10px;align-items:center;margin:8px 0;font-size:14.5px}
+.c output{text-align:right;font-weight:600}
+input[type=range]{width:100%;accent-color:var(--moss)}
+.chk{display:flex;gap:8px;align-items:center;margin:8px 0 10px}
+.res{position:sticky;top:12px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px}
+.big{font:700 46px 'Barlow Condensed',sans-serif}
+.big.neg{color:var(--bad)}.big.pos{color:var(--moss)}
+.bar{display:grid;grid-template-columns:110px 1fr 96px;gap:8px;align-items:center;font-size:13.5px;margin:5px 0}
+.bar i{display:block;height:12px;border-radius:3px}
+.bar span:last-child{text-align:right}
+.warn{background:#fff6dc;border-left:4px solid var(--amb);padding:6px 10px;margin:8px 0;font-size:14px}
+.warn.bad{background:#fde8e6;border-color:var(--bad)}
+.lev{margin:6px 0 0;padding-left:20px;font-size:14.5px}
+footer{padding:28px max(20px,5vw);color:var(--mut);font-size:13.5px;border-top:1px solid var(--line)}
+@media(max-width:820px){.detail,.sim{grid-template-columns:1fr}.res{position:static}.c{grid-template-columns:1fr 1.2fr 70px}}
+@media(prefers-reduced-motion:no-preference){.flow{stroke-dasharray:6 6;animation:fl 1.2s linear infinite}@keyframes fl{to{stroke-dashoffset:-12}}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<linearGradient id="mt" x1="0" x2="1"><stop offset="0" stop-color="#9aa8ad"/><stop offset=".35" stop-color="#eef3f5"/><stop offset="1" stop-color="#76858b"/></linearGradient>
+<linearGradient id="gr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7dbb68"/><stop offset="1" stop-color="#3b7a3f"/></linearGradient>
+<linearGradient id="cn" x1="0" x2="1"><stop offset="0" stop-color="#b9b6ae"/><stop offset=".5" stop-color="#e6e3da"/><stop offset="1" stop-color="#9e9b92"/></linearGradient>
+<linearGradient id="sk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bcd6e2"/><stop offset="1" stop-color="#f3ead6"/></linearGradient>
+</defs></svg>
+
+<header class="hero" id="top">
+<div class="t">
+<h1>From farm and kitchen waste to pipeline-grade fuel</h1>
+<p>Walk through every stage of a compressed biogas plant, then change the levers and see what it does to output, profit and loss.</p>
+<a class="btn" href="#process">Start at the weighbridge</a>
+</div>
+</header>
+
+<section id="process">
+<h2>The process line</h2>
+<p class="sub">Select a stage to see its equipment, typical operating values and the controls that raise or lower efficiency.</p>
+<div class="steps" role="tablist" id="steps"></div>
+<div class="detail" id="detail"></div>
+</section>
+
+<section id="sim">
+<h2>Plant simulator</h2>
+<p class="sub">Defaults describe a mid-size plant. Yields are simplified estimates for learning and early planning, not a design basis.</p>
+<div class="sim">
+<div id="ctl"></div>
+<div class="res" id="res" aria-live="polite"></div>
+</div>
+</section>
+
+<footer>Reference points used: SATAT base price of about ₹77 per kg CBG, MNRE capital support of ₹4 crore per 4,800 kg/day (capped at ₹10 crore), digestate FOM near ₹3 per kg. Verify current prices, subsidy terms and permits before any investment decision.</footer>
+
+<script>
+const $=s=>document.querySelector(s);
+const cy=(x,y,w,h,f='url(#mt)')=>`<ellipse cx="${x+w/2}" cy="${y+h}" rx="${w/2}" ry="${w/8}" fill="${f}"/><rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${f}"/><ellipse cx="${x+w/2}" cy="${y}" rx="${w/2}" ry="${w/8}" fill="#dfe7ea" stroke="#8a999f" stroke-width=".5"/>`;
+const pipe=(d,c='#c0703a',w=3)=>`<path d="${d}" fill="none" stroke="${c}" stroke-width="${w}" stroke-linejoin="round"/><path class="flow" d="${d}" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="1"/>`;
+const wh=(x,y,r=6)=>`<circle cx="${x}" cy="${y}" r="${r}" fill="#222"/><circle cx="${x}" cy="${y}" r="${r/2.3}" fill="#aab"/>`;
+const E={
+weigh:()=>`<rect x="14" y="112" width="172" height="6" fill="#6b777c"/><rect x="22" y="98" width="100" height="14" rx="2" fill="#2f6f9f"/><path d="M26 98L32 64Q46 56 60 64Q76 54 92 66L116 60L120 98Z" fill="#6b5a3b"/><path d="M42 78l8-7 7 8 10-9 9 9" fill="none" stroke="#7a9a4a" stroke-width="5"/><rect x="124" y="74" width="36" height="38" rx="4" fill="#d99a1e"/><rect x="142" y="79" width="14" height="14" fill="#cfe6ef"/>${wh(42,112)}${wh(66,112)}${wh(146,112)}<rect x="172" y="76" width="4" height="36" fill="#555"/><rect x="164" y="62" width="24" height="14" rx="2" fill="#222"/><text x="167" y="72" font-size="8" fill="#8f8">12.4 t</text>`,
+sort:()=>`<rect x="14" y="96" width="172" height="10" rx="5" fill="#333"/>${[24,62,100,138,176].map(x=>`<circle cx="${x}" cy="101" r="4.5" fill="#889"/>`).join('')}${[[30,'#7a9a4a'],[54,'#6b5a3b'],[78,'#3d79b5'],[104,'#7a9a4a'],[128,'#c0703a'],[152,'#6b5a3b']].map(([x,c])=>`<rect x="${x}" y="86" width="14" height="10" rx="2" fill="${c}"/>`).join('')}<path d="M30 106V118M170 106V118" stroke="#556" stroke-width="3"/><path d="M90 20V62" stroke="#556" stroke-width="2"/><rect x="70" y="60" width="40" height="14" rx="3" fill="#b83a32"/><rect x="132" y="48" width="42" height="26" fill="url(#cn)" stroke="#889"/><text x="138" y="65" font-size="8" fill="#333">REJECTS</text>`,
+shred:()=>`<path d="M48 28L152 28L128 70L72 70Z" fill="url(#mt)" stroke="#889"/><path d="M60 28Q80 8 100 20Q120 6 140 28Z" fill="#7a9a4a"/><rect x="62" y="70" width="76" height="42" fill="url(#cn)" stroke="#889"/><circle cx="84" cy="90" r="13" fill="#555"/><circle cx="116" cy="90" r="13" fill="#555"/><circle cx="84" cy="90" r="13" fill="none" stroke="#ddd" stroke-width="3" stroke-dasharray="4 4"/><circle cx="116" cy="90" r="13" fill="none" stroke="#ddd" stroke-width="3" stroke-dasharray="4 4"/><rect x="144" y="78" width="30" height="26" rx="3" fill="#2f6f9f"/><path d="M150 80v22M156 80v22M162 80v22M168 80v22" stroke="#7fb0d4"/><rect x="50" y="112" width="104" height="6" fill="#556"/>`,
+mix:()=>`${cy(60,34,80,76,'url(#cn)')}<rect x="60" y="62" width="80" height="48" fill="#6f8b4a" opacity=".35"/><rect x="98" y="10" width="4" height="70" fill="#556"/><rect x="78" y="74" width="44" height="4" fill="#556"/><rect x="88" y="2" width="24" height="14" rx="2" fill="#2f6f9f"/>${pipe('M8 56H60')}${pipe('M140 100H192')}<rect x="10" y="62" width="14" height="56" fill="#aab"/><rect x="52" y="112" width="96" height="6" fill="#556"/>`,
+dig:()=>`<ellipse cx="100" cy="116" rx="62" ry="6" fill="url(#cn)"/><rect x="38" y="62" width="124" height="54" fill="url(#cn)"/><path d="M38 62Q100 -12 162 62Z" fill="url(#gr)" stroke="#2c5f31"/><path d="M60 50Q100 6 140 50" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="3"/>${pipe('M100 20V8H14V90H38')}<rect x="164" y="82" width="22" height="10" rx="3" fill="#2f6f9f"/>${pipe('M162 100H178',  '#667',4)}<path d="M52 62V116M148 62V116" stroke="#8d8a82" stroke-width="1.5"/><path d="M30 70v46" stroke="#444" stroke-width="2" stroke-dasharray="3 3"/><circle cx="20" cy="76" r="7" fill="#fff" stroke="#555"/><path d="M20 76l3-4" stroke="#b83a32" stroke-width="2"/>`,
+desulf:()=>`${cy(30,20,36,96)}${cy(84,38,34,78)}${cy(138,56,30,60)}${pipe('M48 20V8H101V38')}${pipe('M101 116')}${pipe('M118 90H138')}${pipe('M168 100H192')}${pipe('M6 108H30')}<circle cx="48" cy="46" r="7" fill="#fff" stroke="#555"/><path d="M48 46l3-4" stroke="#b83a32" stroke-width="2"/><rect x="28" y="112" width="140" height="6" fill="#556"/>`,
+upg:()=>`<rect x="12" y="110" width="176" height="8" fill="#556"/>${[0,1,2].map(i=>`<rect x="26" y="${40+i*24}" width="148" height="16" rx="8" fill="url(#mt)" stroke="#8a999f"/><path d="M60 ${40+i*24}v16M140 ${40+i*24}v16" stroke="#8a999f"/>`).join('')}${pipe('M20 48H8V24H100V40')}${pipe('M180 48H192V100')}${pipe('M174 72H186')}<circle cx="60" cy="30" r="8" fill="#fff" stroke="#555"/><path d="M60 30l4-4" stroke="#b83a32" stroke-width="2"/><circle cx="140" cy="30" r="8" fill="#fff" stroke="#555"/><path d="M140 30l-4-4" stroke="#2c5f31" stroke-width="2"/><path d="M34 106V118M166 106V118" stroke="#556" stroke-width="3"/>`,
+comp:()=>`<rect x="8" y="58" width="76" height="54" rx="3" fill="#2f6f9f"/><path d="M20 58v54M36 58v54M52 58v54M68 58v54" stroke="#255a82"/><rect x="30" y="46" width="22" height="12" fill="#889"/><rect x="92" y="106" width="100" height="6" fill="#555"/>${[0,1,2,3,4,5].map(i=>`<rect x="${98+i*15}" y="54" width="12" height="52" rx="6" fill="url(#mt)" stroke="#8a999f"/>`).join('')}${pipe('M84 90H96V50H190','#c0703a',2.5)}${wh(110,114,5)}${wh(176,114,5)}<rect x="8" y="112" width="76" height="6" fill="#556"/><text x="96" y="46" font-size="9" fill="#2c3b3d" font-weight="700">250 bar</text>`,
+sep:()=>`${cy(8,52,34,62,'url(#cn)')}<g transform="rotate(-6 90 88)"><rect x="52" y="76" width="76" height="24" rx="12" fill="url(#mt)" stroke="#8a999f"/><path d="M62 78v20M78 78v20M94 78v20M110 78v20" stroke="#8a999f"/></g><path d="M52 112V90M126 112V90" stroke="#556" stroke-width="3"/><path d="M128 118Q156 52 192 118Z" fill="#4a3a28"/><path d="M146 118Q162 80 178 118Z" fill="#5d4a33"/>${pipe('M42 90H52')}${pipe('M90 112H60V118','#2f6f9f',2.5)}`};
+const place=(k,x,s)=>`<g transform="translate(${x} ${336-118*s}) scale(${s})">${E[k]()}</g>`;
+const scene=`<svg class="scene" viewBox="0 0 1200 420" preserveAspectRatio="xMidYMax slice" aria-hidden="true"><rect width="1200" height="420" fill="url(#sk)"/><circle cx="1050" cy="86" r="34" fill="#fff6d8"/><path d="M0 280Q200 220 420 272T820 262T1200 250V420H0Z" fill="#b5cfa6"/><path d="M0 300Q300 262 620 296T1200 284V420H0Z" fill="#9db98c"/><rect y="336" width="1200" height="84" fill="#8a9a78"/><rect y="380" width="1200" height="40" fill="#5f686c"/><path d="M0 400H1200" stroke="#e6e0c8" stroke-width="3" stroke-dasharray="26 18"/>${place('weigh',-10,1.05)}${place('sort',170,1)}${place('shred',340,1)}${place('mix',500,1.2)}${place('dig',690,1.85)}${place('desulf',1030,.95)}<path d="M0 346H1200" stroke="#6b777c" stroke-width="2"/><path d="M1168 336V250" stroke="#555" stroke-width="5"/><path d="M1168 250Q1156 232 1168 214Q1180 232 1168 250Z" fill="#e8892a"/></svg>`;
+document.querySelector('.hero').insertAdjacentHTML('afterbegin',scene);
+
+const S=[
+{k:'weigh',t:'Receiving and weighing',d:'Trucks bring dung, crop residue and kitchen waste. Every load is weighed, logged by source and graded before it is tipped.',p:['Typical load: 8-12 t','Record: weight, source, moisture'],l:['Reject loads with sand or plastic above your limit, since they wear pumps and clog pipes.','Log each source to find the cheapest feed that still gives high yield.','Sign long-term supply contracts with price escalation so feed does not run short.']},
+{k:'sort',t:'Sorting and de-packaging',d:'Magnets, screens and sorting tables pull out metal, plastic and stones. Kitchen waste often arrives in bags that must be opened.',p:['Contaminants: under 3% by weight'],l:['Segregation at the kitchen is the cheapest sorting you will ever do.','Every 1% of rejects is paid-for feed you cannot convert to gas.','Keep the magnet and screens clean so the line does not stop.']},
+{k:'shred',t:'Shredding and crushing',d:'Cutters reduce particle size so bacteria can reach the material. Straw and fibrous residue need the most work.',p:['Particle size: 10-30 mm'],l:['Finer particles digest faster but cost more power. Find the point where gas gained per kWh stops rising.','Sharpen or replace knives on schedule to hold power per tonne down.','Pre-treat straw (soaking, steam or enzymes) when it is a large share of feed.']},
+{k:'mix',t:'Mixing and feed tank',d:'Feedstock is blended with water or recycled liquid into a pumpable slurry and fed to the digester in steady portions.',p:['Total solids: 8-12%','C:N ratio: 20-30','pH: 6.5-7.5'],l:['Blend dung with food waste: dung buffers acidity, food waste adds gas.','Recycle liquid digestate instead of fresh water to save water and keep nutrients.','Feed small portions every few hours. Slug feeding causes acid spikes.']},
+{k:'dig',t:'Anaerobic digestion',d:'Sealed digesters hold the slurry warm and stirred while bacteria turn it into biogas, about 55-60% methane.',p:['Temperature: 35-38 °C','Retention: 20-30 days'],l:['Hold temperature within about 1 °C. Recover heat from the compressor and gas engine.','Watch the ratio of volatile fatty acids to alkalinity. Above about 0.4, cut the feed.','Increase loading gradually and dose trace elements if yield drops without a clear cause.']},
+{k:'desulf',t:'Desulfurisation and drying',d:'Raw biogas carries hydrogen sulfide and water. Both are removed to protect compressors, membranes and the gas grid.',p:['H₂S: down to under 50 ppm'],l:['Small air dosing in the digester headspace removes much H₂S for almost no cost.','Use iron-based or carbon polishing as the final guard.','Chill and dry the gas so water never reaches the membranes.']},
+{k:'upg',t:'Upgrading to CBG',d:'Membranes, pressure swing adsorption or scrubbers separate CO₂ from methane until the gas is over 95% methane.',p:['Methane: over 95%','Slip: under 2%'],l:['Methane slip is sold gas lost to the air. Recycle off-gas to recover it.','Hold inlet pressure and flow steady to protect membrane life.','Track slip every shift. One point of slip is about one point of revenue.']},
+{k:'comp',t:'Compression and cascades',d:'Clean gas is compressed to 250 bar and filled into cascades that trucks carry to the oil marketing company fuelling points.',p:['Pressure: 250 bar','Spec: IS 16087'],l:['Schedule fills around truck arrivals so cascades never wait full or empty.','Keep a quality log. Off-spec gas can be rejected at the buyer.','Shorter routes cut transport cost. Support applies beyond 50 km.']},
+{k:'sep',t:'Digestate separation and FOM',d:'The spent slurry is pressed or decanted into solid and liquid. The solid becomes fermented organic manure, a second income stream.',p:['Solid output: about 10% of feed mass'],l:['Better dewatering means more saleable solid per tonne of feed.','Certified FOM and liquid FOM sell at a premium to farmers.','Send surplus liquid back to the mixing tank to cut water cost.']}];
+S.forEach((s,i)=>{$('#steps').insertAdjacentHTML('beforeend',`<button class="step" role="tab" data-i="${i}">${i+1}. ${s.t.split(' and ')[0]}</button>`)});
+function show(i){document.querySelectorAll('.step').forEach((b,j)=>b.setAttribute('aria-selected',j==i));const s=S[i];
+$('#detail').innerHTML=`<div class="view"><svg viewBox="0 0 200 140" role="img" aria-label="${s.t} equipment"><rect width="200" height="118" fill="url(#sk)"/><path d="M0 96Q50 76 100 92T200 86V118H0Z" fill="#b5cfa6"/><rect y="118" width="200" height="22" fill="#8a9a78"/>${E[s.k]()}</svg></div><div><h3>${i+1}. ${s.t}</h3><p>${s.d}</p><div class="kv">${s.p.map(x=>`<span>${x}</span>`).join('')}</div><b>Controls that move efficiency and profit</b><ul>${s.l.map(x=>`<li>${x}</li>`).join('')}</ul></div>`}
+$('#steps').onclick=e=>{const b=e.target.closest('.step');if(b)show(+b.dataset.i)};show(0);
+
+const G=[['Feedstock per day',[['dung','Cattle dung (t)',0,150,5,60],['food','Kitchen waste (t)',0,80,1,25],['straw','Crop residue (t)',0,60,1,0]]],
+['Process',[['temp','Digester temp (°C)',25,45,.5,37],['hrt','Retention (days)',10,45,1,30],['up','Uptime (%)',60,98,1,90],['slip','Methane slip (%)',0.5,8,.5,2]]],
+['Money (₹)',[['price','CBG price per kg',40,110,1,77],['fom','FOM price per tonne',0,6000,100,3000],['cdung','Dung cost per t',0,1000,50,300],['cfood','Kitchen waste cost per t',-500,500,50,0],['cstraw','Crop residue cost per t',0,5000,100,3000],['opex','Running cost per kg CBG',5,30,1,14],['capex','Capital cost (₹ crore)',3,20,.5,8]]]];
+const P={};
+$('#ctl').innerHTML=G.map(([n,a])=>`<fieldset><legend>${n}</legend>${a.map(([k,l,mn,mx,st,v])=>{P[k]=v;return`<label class="c"><span>${l}</span><input type="range" id="${k}" min="${mn}" max="${mx}" step="${st}" value="${v}"><output id="o${k}"></output></label>`}).join('')}${n=='Money (₹)'?'<label class="chk"><input type="checkbox" id="sub" checked> Include MNRE capital support</label>':''}</fieldset>`).join('');
+const f=(n,d=0)=>n.toLocaleString('en-IN',{maximumFractionDigits:d});
+const R=n=>(n<0?'-':'')+'₹'+f(Math.abs(n));
+function calc(p){const tot=p.dung+p.food+p.straw;
+const tf=Math.max(0,1-Math.pow((p.temp-37)/12,2)),hf=Math.min(1.05,(1-Math.exp(-p.hrt/12))/(1-Math.exp(-2.5)));
+const bio=(p.dung*30+p.food*85+p.straw*110)*tf*hf*p.up/100;
+const cbg=bio*.58*(1-p.slip/100)*.717/.95;
+const fomT=tot*.10,sub=p.sub?Math.min(4*cbg/4800,10):0;
+const rev=cbg*p.price,fr=fomT*p.fom,fc=p.dung*p.cdung+p.food*p.cfood+p.straw*p.cstraw,op=cbg*p.opex,cap=Math.max(0,p.capex-sub)*1e7*.15/365;
+return{tot,bio,cbg,fomT,rev,fr,fc,op,cap,sub,profit:rev+fr-fc-op-cap}}
+function run(){document.querySelectorAll('#ctl input[type=range]').forEach(i=>{P[i.id]=+i.value;$('#o'+i.id).textContent=i.value});P.sub=$('#sub').checked;
+const r=calc(P),tot=r.tot||1,fs=P.food/tot,cn=(P.dung*25+P.food*15+P.straw*70)/tot,w=[];
+if(fs>.4)w.push(['bad','Kitchen waste is over 40% of feed. Expect acid build-up; add dung or cut the food share.']);
+if(cn<18||cn>35)w.push(['','Carbon to nitrogen ratio is about '+f(cn,0)+'. Aim for 20-30 by adjusting the mix.']);
+if(P.temp<33||P.temp>40)w.push(['','Digester temperature is outside the 35-38 °C sweet spot, so yield drops.']);
+if(P.hrt<20)w.push(['','Retention under 20 days leaves gas unextracted.']);
+if(r.cbg>0&&r.fc/Math.max(r.cbg,1)>40)w.push(['','Feed cost per kg of CBG is high. Check which feedstock is expensive for its yield.']);
+const base=r.profit,L=[['Bring temperature to 37 °C',{temp:37}],['Raise retention to 30 days',{hrt:30}],['Add 5 points of uptime',{up:Math.min(98,P.up+5)}],['Cut methane slip by 1 point',{slip:Math.max(.5,P.slip-1)}],['Gain ₹5 per kg on CBG price',{price:P.price+5}],['Cut running cost by ₹2 per kg',{opex:P.opex-2}]].map(([n,c])=>[n,calc({...P,...c}).profit-base]).filter(x=>x[1]>1).sort((a,b)=>b[1]-a[1]).slice(0,4);
+const items=[['CBG sales',r.rev,'var(--moss)'],['FOM sales',r.fr,'#6a9d58'],['Feedstock',-r.fc,'var(--cu)'],['Running cost',-r.op,'#d28a58'],['Capital charge',-r.cap,'#9a8f84']],mx=Math.max(...items.map(x=>Math.abs(x[1])),1);
+$('#res').innerHTML=`<div>Profit per day</div><div class="big ${r.profit<0?'neg':'pos'}">${R(r.profit)}</div><div>About ${R(r.profit*30)} a month. CBG output ${f(r.cbg)} kg/day (${f(r.cbg/1000,2)} t), biogas ${f(r.bio)} m³/day, FOM ${f(r.fomT,1)} t/day.</div><div style="margin:14px 0">${items.map(([n,v,c])=>`<div class="bar"><span>${n}</span><i style="width:${Math.abs(v)/mx*100}%;background:${c}"></i><span>${R(v)}</span></div>`).join('')}</div>${w.map(([c,t])=>`<div class="warn ${c}">${t}</div>`).join('')}<b>Best levers right now (profit per day)</b><ul class="lev">${L.length?L.map(([n,v])=>`<li>${n}: +${R(v)}</li>`).join(''):'<li>All tested levers are near their best at these settings.</li>'}</ul>`}
+$('#ctl').addEventListener('input',run);run();
+</script>
+</body>
+</html>
